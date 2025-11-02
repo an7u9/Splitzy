@@ -43,7 +43,7 @@ public class RegisterRequest {
     @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Please provide a valid phone number")
     private String phoneNumber;
 
-    private boolean isPasswordMatching(){
+    public boolean isPasswordMatching(){
         return password != null && password.equals(confirmPassword);
     }
 }
