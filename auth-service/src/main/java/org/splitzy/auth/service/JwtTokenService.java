@@ -39,7 +39,7 @@ public class JwtTokenService {
         this.refreshTokenValiditySeconds = refreshTokenValiditySeconds;
     }
 
-    public String generateAcessToken(AuthUser authUser) {
+    public String generateAccessToken(AuthUser authUser) {
         return generateToken(authUser, accessTokenValiditySeconds, "ACCESS");
     }
 

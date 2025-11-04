@@ -30,14 +30,14 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         log.info("Attempting to register a new user with email: {}", request.getEmail());
 
-        if(!request.isPasswordMatching()){
-            throw new validationException("Password and confirm password should be same.")
+        if (!request.isPasswordMatching()) {
+            throw new ValidationException("Password and confirm password should be same.");
         }
-        if(!authUserRepository.existsByEmail(request.getEmail())){
-            throw new validationException("Email already registered.");
+        if (!authUserRepository.existsByEmail(request.getEmail())) {
+            throw new ValidationException("Email already registered.");
         }
-        if(authUserRepository.existsByUsername(request.getUsername())){
-            throw new validationException("Username is already taken.");
+        if (authUserRepository.existsByUsername(request.getUsername())) {
+            throw new ValidationException("Username is already taken.");
         }
 
         AuthUser authUser = AuthUser.builder()
@@ -53,7 +53,7 @@ public class AuthService {
         AuthUser authUserSaved = authUserRepository.save(authUser);
         log.info("Successfully registered a new user with ID: {}", authUserSaved.getId());
 
-        String accessToken = jwtTokenService.generateAcessToken(authUserSaved);
+        String accessToken = jwtTokenService.generateAccessToken(authUserSaved);
         String refreshToken = jwtTokenService.generateRefreshToken(authUserSaved);
 
         return buildAuthResponse(authUserSaved, accessToken, refreshToken);
@@ -65,15 +65,15 @@ public class AuthService {
         AuthUser user = authUserRepository.findByUsernameAndIsActiveTrue(request.getEmailOrusername())
                 .orElseThrow(() -> new ValidationException("Invalid email/username or password."));
 
-        if(user.isAccountLocked()){
+        if (user.isAccountLocked()) {
             throw new BusinessException("Account is locked due to multiple login attempts.");
         }
 
-        if(!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())){
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new ValidationException("Invalid password.");
         }
 
-        if(user.getFailedLoginAttempts() > 0){
+        if (user.getFailedLoginAttempts() > 0) {
             user.resetFailedloginAttempts();
             authUserRepository.resetFailedLoginAttempts(user.getId());
         }
@@ -83,7 +83,7 @@ public class AuthService {
 
         log.info("Successfully login for: {}", user.getUsername());
 
-        String accessToken = jwtTokenService.generateAcessToken(user);
+        String accessToken = jwtTokenService.generateAccessToken(user);
         String refreshToken = jwtTokenService.generateRefreshToken(user);
 
         return buildAuthResponse(user, accessToken, refreshToken);
@@ -93,10 +93,10 @@ public class AuthService {
     public void logout(LogOutRequest request) {
         log.info("Attempting to logout");
 
-        try{
+        try {
             jwtTokenService.blacklistToken(request.getAcessToken());
 
-            if(request.getRefreshToken() != null && !request.getRefreshToken().isBlank()){
+            if (request.getRefreshToken() != null && !request.getRefreshToken().isBlank()) {
                 jwtTokenService.blacklistToken(request.getRefreshToken());
             }
             log.info("User logged out successfully");
@@ -138,7 +138,7 @@ public class AuthService {
     }
 
     private void handleFailedLogin(AuthUser user) {
-        user.incrementFailedAttempts();
+        user.incrementFailedLoginAttempts();
         authUserRepository.updateFailedLoginAttempts(
                 user.getId(),
                 user.getFailedLoginAttempts(),

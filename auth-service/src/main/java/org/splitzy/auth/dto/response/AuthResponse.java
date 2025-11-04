@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,6 +16,7 @@ public class AuthResponse {
     private String refreshToken;
     private String tokenType = "Bearer";
     private Long expiresIn;
+    private LocalDateTime expiresAt;
     private UserInfo user;
 
     @Data
