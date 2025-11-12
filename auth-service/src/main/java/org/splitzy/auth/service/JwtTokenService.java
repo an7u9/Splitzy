@@ -2,7 +2,7 @@ package org.splitzy.auth.service;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.splitzy.auth.entity.AuthUser;
 import org.splitzy.common.exception.ValidationException;

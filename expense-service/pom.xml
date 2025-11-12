@@ -1,20 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+
+<parent>
+    <groupId>org.splitzy</groupId>
+    <artifactId>splitzy-backend</artifactId>
+    <version>1.0.0</version>
+</parent>
+
+<artifactId>expense-service</artifactId>
+<name>Expense Service</name>
+<description>Core expense splitting and balance calculation service</description>
+
+<dependencies>
+    <!-- Common Library -->
+    <dependency>
         <groupId>org.splitzy</groupId>
-        <artifactId>splitzy-backend</artifactId>
+        <artifactId>common-lib</artifactId>
         <version>1.0.0</version>
-    </parent>
+    </dependency>
 
-    <artifactId>expense-service</artifactId>
+    <!-- Spring Boot Starters -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
 
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
 
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- Kafka -->
+    <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+        <!-- version is managed by the parent BOM (spring-boot-dependencies); remove explicit version to avoid mismatches
+             and allow the parent spring.boot.version property to control the compatible spring-kafka release -->
+    </dependency>
+
+    <!-- Database -->
+    <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>9.4.0</version>
+    </dependency>
+
+    <!-- OpenAPI/Swagger -->
+    <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>2.8.13</version>
+    </dependency>
+
+    <!-- Lombok -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.18.30</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Cache -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>jakarta.persistence</groupId>
+        <artifactId>jakarta.persistence-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.splitzy</groupId>
+        <artifactId>common-lib</artifactId>
+        <version>1.0.0</version>
+        <scope>compile</scope>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
 </project>

@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,9 @@ public class RedisConfig {
         if (redisPassword != null && !redisPassword.isEmpty()) {
             config.setPassword(redisPassword);
         }
-        return new JedisConnectionFactory(config);
+        // Use LettuceConnectionFactory which is provided by spring-boot-starter-data-redis
+        // and doesn't require the Jedis client on the classpath.
+        return new LettuceConnectionFactory(config);
     }
 
     // Redis template for string operations

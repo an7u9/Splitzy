@@ -21,7 +21,7 @@ public class GenericCriteriaBuilder<T> {
         List<Specification<T>> specifications = new ArrayList<>();
 
         for(SearchCriteria searchCriteria : criteria){
-            Specification<T> specification = createSpecification(criteria);
+            Specification<T> specification = createSpecification(searchCriteria);
             if(specification != null){
                 specifications.add(specification);
             }
