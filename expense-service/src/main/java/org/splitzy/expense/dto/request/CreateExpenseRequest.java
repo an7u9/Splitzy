@@ -83,21 +83,32 @@ public class CreateExpenseRequest {
         @Digits(integer = 3, fraction = 2, message = "Invalid percentage format")
         private BigDecimal percentage;
 
+        @DecimalMin(value = "0.00", message = "Item total cannot be negative")
+        @Digits(integer = 12, fraction = 2, message = "Invalid item total format")
+        private BigDecimal itemTotal;
+
         @Min(value = 1, message = "Shares must be at least 1")
         private Integer shares;
 
         @Size(max = 500, message = "Notes must not exceed 500 characters")
         private String notes;
 
-        @Size()
+        @Min(value = 1, message = "Ratio must be at least 1")
         private Integer ratio;
+
+        private BigDecimal adjustment;
     }
 
     //  Validate that splits sum equals total amount (for EXACT split type)
     public boolean isSplitsValid() {
-        if (splitType == Expense.SplitType.EXACT) {
+        if (splitType == Expense.SplitType.EXACT || splitType == Expense.SplitType.ITEMIZED) {
             BigDecimal totalSplit = splits.stream()
-                    .map(SplitRequest::getAmount)
+                    .map(req -> {
+                        if(splitType == Expense.SplitType.ITEMIZED) { return req.getItemTotal();}
+                        if(splitType == Expense.SplitType.EXACT){return req.getAmount();}
+                        return BigDecimal.ZERO;
+                    })
+                    .filter(v -> v != null)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             return totalAmount.compareTo(totalSplit) == 0;
         }

@@ -1,7 +1,5 @@
 package org.splitzy.expense.service;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.security.oauthbearer.internals.secured.ValidateException;
 import org.splitzy.expense.dto.request.CreateExpenseRequest;
@@ -13,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,6 @@ public class SplitCalculationService {
 
     public List<ExpenseSplit> calculateSplits(Expense expense, List<CreateExpenseRequest.SplitRequest> splitRequests) {
         log.debug("Calculating splits for expense according to type: {}", expense.getSplitType());
-
         return switch (expense.getSplitType()){
             case EQUAL -> calculateEqualSpllits(expense, splitRequests);
             case CUSTOM_RATIO -> calculateCustomRatioSplits(expense, splitRequests);
@@ -83,16 +81,25 @@ public class SplitCalculationService {
         if(i == splitRequests.size() -1){
         amount = expense.getTotalAmount().subtract(totalCalculated);
         }
-        }
+        BigDecimal percentage = BigDecimal.valueOf(request.getRatio())
+                .divide(BigDecimal.valueOf(totalRatio), 4,ROUNDING_MODE);
+        splits.add(buildSplit(expense, request, amount, percentage));
+        totalCalculated = totalCalculated.add(amount);
 
+        log.debug("Custom ratio calculated for user {}: {} (ratio: {})", request.getUserId(), amount, request.getRatio());
+        }
+        return splits;
     }
 
     private List<ExpenseSplit> calculateExactSplits(Expense expense, List<CreateExpenseRequest.SplitRequest> splitRequests) {
-        BigDecimal totalAmount = splitRequests.stream().map(CreateExpenseRequest.SplitRequest::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalSplit = splitRequests.stream()
+                .map(CreateExpenseRequest.SplitRequest::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (expense.getTotalAmount().compareTo(totalAmount) != 0) {
-            throw new ValidateException("Sum of exact amounts does not match total. Expected: " + expense.getTotalAmount() +
-                    ", but got: " + totalAmount);
+        if (expense.getTotalAmount().compareTo(totalSplit) != 0) {
+            throw new ValidateException("Sum of exact amounts does not match total. Expected: " +
+                    expense.getTotalAmount() + ", but got: " + totalSplit);
         }
 
             List<ExpenseSplit> splits = new ArrayList<>();
@@ -106,6 +113,36 @@ public class SplitCalculationService {
         if(splitRequests.isEmpty() || splitRequests == null){
             throw new ValidateException("Atleast one split is required.");
         }
+    }
+
+    private List<ExpenseSplit> calculateItemizedSplits(Expense expense, List<CreateExpenseRequest.SplitRequest> splitRequests) {
+        BigDecimal totalItems = splitRequests.stream()
+                .map(CreateExpenseRequest.SplitRequest::getItemTotal)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if(expense.getTotalAmount().compareTo(totalItems) != 0){
+            throw new ValidateException("Sum ofitemized totals (" +totalItems + ") must equal total expense (" + expense.getTotalAmount() + ")");
+        }
+
+        return splitRequests.stream().map(req -> buildSplit(expense, req, req.getItemTotal(), calculatePercentage(expense, req.getItemTotal())))
+                .peek(req -> log.debug("Itemized split for user {}: {}", req.getUserId(), req.getItemTotal()))
+                .collect(Collectors.toList());
+    }
+
+    private List<ExpenseSplit> calculateAdjustmentSplits(Expense expense, List<CreateExpenseRequest.SplitRequest> splitRequests) {
+        BigDecimal totalAdjustment = splitRequests.stream()
+                .map(CreateExpenseRequest.SplitRequest::getAdjustment)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if(totalAdjustment.compareTo(BigDecimal.ZERO) != 0){
+            log.warn("Adjustment splits do not sum to zero ({}). This will affect total reconciliation", totalAdjustment);
+        }
+
+        return splitRequests.stream().map(req -> buildSplit(expense, req, req.getAdjustment(), null))
+                .peek(req -> log.debug("Adjustment split for user {}: {}", req.getUserId(), req.getAdjustment()))
+                .collect(Collectors.toList());
     }
 
     private ExpenseSplit buildSplit(Expense expense, CreateExpenseRequest.SplitRequest request, BigDecimal amount, BigDecimal percentage) {

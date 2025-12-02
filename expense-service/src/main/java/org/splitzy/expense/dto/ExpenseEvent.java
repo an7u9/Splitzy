@@ -30,7 +30,6 @@ public class ExpenseEvent {
         EXPENSE_CREATED,
         EXPENSE_UPDATED,
         EXPENSE_DELETED,
-        EXPENSE_SETTLED,
         SPLIT_SETTLED
     }
 }

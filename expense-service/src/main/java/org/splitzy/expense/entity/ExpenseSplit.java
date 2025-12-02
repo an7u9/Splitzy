@@ -54,6 +54,12 @@ public class ExpenseSplit extends BaseEntity {
     @Column(name = "notes", length = 500)
     private String notes;
 
+    @Column(name = "Total Items", length = 500)
+    private BigDecimal itemTotal;
+
+    @Column(name = "Adjsutments", length = 500)
+    private BigDecimal adjustment;
+
     /**
      * Check if user owes money (not the payer)
      */
@@ -84,7 +90,7 @@ public class ExpenseSplit extends BaseEntity {
             throw new IllegalArgumentException("Partial amount must be positive");
         }
 
-        BigDecimal newSettledAmount = this.settledAmount.add(partialAmount);
+        BigDecimal newSettledAmount = (this.settledAmount != null ? this.settledAmount : BigDecimal.ZERO).add(partialAmount);
         if (newSettledAmount.compareTo(this.amount) > 0) {
             throw new IllegalArgumentException("Settled amount cannot exceed total split amount");
         }
