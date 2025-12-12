@@ -48,6 +48,8 @@ public class ExpenseEventPublisher {
             log.debug("Event published successfully to topic: {}", EXPENSE_TOPIC);
         } catch (Exception e){
             log.error("Failed to publish event to kafka: {}", e.getMessage(), e);
+            // Don't throw exception, continue processing
+            // In production, you might want to implement a retry mechanism or dead letter queue
         }
     }
 

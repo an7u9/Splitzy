@@ -1,4 +1,4 @@
-package org.splitzy.expense.dto;
+package org.splitzy.expense.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
